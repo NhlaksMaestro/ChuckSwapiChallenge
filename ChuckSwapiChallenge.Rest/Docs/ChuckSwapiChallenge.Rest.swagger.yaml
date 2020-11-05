@@ -1,0 +1,281 @@
+aopenapi: 3.0.0
+servers:
+- url: http://localhost:49678/api
+  description: Local development
+info:
+  version: "1.0.0"
+  title: Chuck Norris and Star Wars API challenge 
+  description: |
+    A challenge for creating a service that can handle communication with and external services a concept of micro services.
+tags:
+  - name: swapi
+    description: API endpoints communicating with external Star Wars service.
+  - name: chuck
+    description: API endpoints communicating with external Chuck Norris service.
+  - name: search
+    description: API endpoints communicating with external Star Wars and Chuck Norris services.
+paths:
+  /swapi/people:
+    get:
+      summary: Retrieves all the Star Wars characters data.
+      description: |
+        Retrieves all the Star Wars people data on the Star Wars api.
+      tags:
+        - people
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StarWarsPeopleListPaginationModel'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /chuck/categories:
+    get:
+      summary: Retrieves all the Chuck Norris jokes data.
+      description: |
+        Retrieves all the Chuck Norris jokes data on the Chuck Norris api.
+      tags:
+        - categories
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: String list containing the list of chuck norris joke categories.
+                items:
+                    type: string    
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /search/{query}:
+    get:
+      summary: retrieves all items in the chuck norris joke search and star wars poeple search api endpoints based on search query.
+      tags:
+        - Star wars People and chuck norris jokes
+      operationId: getChuckNorrisJokesAndStarWarsPeopleBySearchTerm
+      parameters:
+        - $ref: '#/components/parameters/query'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Dictionary object containing the list of star wars people and chuck norris jokes retrieved from both apis.
+                additionalProperties:
+                  type: object
+                  properties:
+                    url:
+                      type: string    
+                    apiObjects:
+                      type: type: array
+                      description: String list containing the list of chuck norris joke categories.
+                      items:
+                        allOf:
+                           - $ref: '#/components/schemas/Cat'
+                           - $ref: '#/components/schemas/Dog'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    query:
+      name: query
+      in: path
+      required: true
+      description: search term for searching
+      schema:
+        type: string
+  responses:
+    NoContent:
+      description: |
+        The operation completed successfully but no content is needed
+        in the response.
+
+    BadRequest:
+      description: Bad request - Problem with the request (E.g. Missing parameters)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized - Token is missing or Invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Forbidden - User is not allowed to access this end point
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Not found - Requested entity is not found in database
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Conflict:
+      description: Conflict - Request creates conflict in database. E.g. Using duplicate names
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal Server Error - Request is valid but operation failed at server side
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UserInfoResponse:
+      description: Response that provides a UserInfo object.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserDetail'
+    ErrorSearchResponse:
+      description: Response that provides the error search response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              total:
+                type: number
+              items:
+                type: array
+                items:
+                  type: object
+                  allOf:
+                    - $ref: '#/components/schemas/IdenfitifiableEntity'
+                  properties:
+                    name:
+                      type: string
+                      description: the name from where the error generated, e.g. data source name
+                    message:
+                      type: string
+                    createdOn:
+                      type: string
+                      format: date-time
+                    errors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+  schemas:
+    StarWarsPeopleModel:
+      type: object
+      properties:
+        Name:
+          type: string
+        Mass:
+          type: string
+        Height:
+          type: string
+        HairColor:
+          type: string
+        SkinColor:
+          type: string
+        BirthYear:
+          type: string
+        Gender:
+          type: string
+        HomeWorld:
+          type: string
+        Films:          
+          type: array
+          description: The List of films star wars pupil was incuded in of the franchise.
+          items:
+            type: string
+        Species:          
+          type: array
+          description: The List of species the star wars pupil is classified under.
+          items:
+            type: string
+        Vehicles:          
+          type: array
+          description: The List of Vehicles the star wars pupil has driven/owns.
+          items:
+            type: string
+        Starships:          
+          type: array
+          description: The List of starships the star wars pupil has been on.
+          items:
+            type: string
+        Created:
+          type: string
+          format: date-time
+        Edited:
+          type: string
+          format: date-time
+        Url:
+          type: string
+    StarWarsPeopleListPaginationModel:
+     type: object
+     required: 
+      - id
+     properties:
+       Count: 
+          type: number
+       Next: 
+          type: string
+       Previous: 
+          type: string
+       Results: 
+          type: array
+          description: The List of people retrieved from the star wars api.
+          items:
+            type: object
+            allOf:
+              - $ref: '#/components/schemas/StarWarsPeopleModel'
+     required: 
+      - id
+     properties:
+       Total: 
+          type: number
+       Results: 
+          type: array
+          description: The List of jokes retrieved from the Chuck Norris api.
+          items:
+            type: object
+            allOf:
+              - $ref: '#/components/schemas/ChuckNorrisJokeModel'
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    ChuckNorrisListPaginationModel:
+     type: object
